@@ -1,0 +1,7 @@
+D:\VS\testirovanie\testirovanie\obj\Debug\testirovanie.csproj.AssemblyReference.cache
+D:\VS\testirovanie\testirovanie\obj\Debug\testirovanie.csproj.CoreCompileInputs.cache
+D:\VS\testirovanie\testirovanie\bin\Debug\testirovanie.exe.config
+D:\VS\testirovanie\testirovanie\bin\Debug\testirovanie.exe
+D:\VS\testirovanie\testirovanie\bin\Debug\testirovanie.pdb
+D:\VS\testirovanie\testirovanie\obj\Debug\testirovanie.exe
+D:\VS\testirovanie\testirovanie\obj\Debug\testirovanie.pdb
