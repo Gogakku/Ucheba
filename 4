@@ -1,0 +1,138 @@
+using System;
+using System.IO;
+using Newtonsoft.Json;
+
+// Интерфейс для логирования ошибок
+public interface IErrorLogger
+{
+    void LogError(ErrorLog errorLog);
+}
+
+// Реализация интерфейса для записи ошибок
+public class FileErrorLogger : IErrorLogger
+{
+    private string txtFilePath;
+    private string jsonFilePath;
+
+    // Конструктор класса с указанием путей к файлам
+    public FileErrorLogger(string txtFilePath, string jsonFilePath)
+    {
+        this.txtFilePath = txtFilePath;
+        this.jsonFilePath = jsonFilePath;
+    }
+
+    // Метод интерфейса для логирования ошибок
+    public void LogError(ErrorLog errorLog)
+    {
+        // Сериализация объекта ErrorLog в JSON
+        string serializedError = JsonConvert.SerializeObject(errorLog, Formatting.Indented);
+
+        // Запись в текстовый файл
+        using (StreamWriter txtWriter = new StreamWriter(txtFilePath, true))
+        {
+            txtWriter.WriteLine($"Время ошибки: {errorLog.Time}");
+            txtWriter.WriteLine($"Сообщение: {errorLog.Message}");
+            txtWriter.WriteLine($"Трейслог: {errorLog.StackTrace}");
+            txtWriter.WriteLine(new string('-', 60));
+        }
+
+        // Запись в JSON-файл
+        using (StreamWriter jsonWriter = new StreamWriter(jsonFilePath, true))
+        {
+            jsonWriter.WriteLine(serializedError);
+            jsonWriter.WriteLine(new string('-', 60));
+        }
+
+        // Вывод сообщения о записи ошибки
+        Console.WriteLine($"Ошибка записана в файл: {txtFilePath}, {jsonFilePath}");
+    }
+}
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        Console.WriteLine("Введите путь к файлу:");
+        string path = Console.ReadLine();
+
+        // Пути к файлам для логирования
+        string jsonLogFilePath = @"C:\Users\metel\OneDrive\Рабочий стол\4\error_log.json";
+        string txtLogFilePath = @"C:\Users\metel\OneDrive\Рабочий стол\4\error_log.txt";
+
+        // Создание экземпляра класса FileErrorLogger
+        IErrorLogger errorLogger = new FileErrorLogger(txtLogFilePath, jsonLogFilePath);
+
+        try
+        {
+            // Чтение данных из файла и выполнение вычислений
+            string[] lines = File.ReadAllLines(path);
+
+            if (lines.Length != 3)
+            {
+                throw new Exception("!Ошибка! Проверьте исходный файл, данные имеют неверный формат");
+            }
+
+            double a = double.Parse(lines[0]);
+            double b = double.Parse(lines[1]);
+            double c = double.Parse(lines[2]);
+
+            double discriminant = b * b - 4 * a * c;
+
+            if (discriminant < 0)
+            {
+                throw new Exception("!Ошибка! Проверьте данные в исходном файле, дискриминант меньше нуля");
+            }
+            else if (discriminant == 0)
+            {
+                double x = -b / (2 * a);
+                Console.WriteLine($"Решение: один корень x = {x}");
+            }
+            else
+            {
+                double x1 = (-b + Math.Sqrt(discriminant)) / (2 * a);
+                double x2 = (-b - Math.Sqrt(discriminant)) / (2 * a);
+                Console.WriteLine($"Решение: два корня x1 = {x1}, x2 = {x2}");
+            }
+        }
+        catch (FormatException ex)
+        {
+            // Логирование ошибки формата данных
+            errorLogger.LogError(new ErrorLog
+            {
+                Time = DateTime.Now,
+                Message = ex.Message,
+                StackTrace = ex.StackTrace
+            });
+        }
+        catch (FileNotFoundException ex)
+        {
+            // Логирование ошибки при поиске файла
+            errorLogger.LogError(new ErrorLog
+            {
+                Time = DateTime.Now,
+                Message = ex.Message,
+                StackTrace = ex.StackTrace
+            });
+        }
+        catch (Exception ex)
+        {
+            // Логирование общей ошибки
+            errorLogger.LogError(new ErrorLog
+            {
+                Time = DateTime.Now,
+                Message = ex.Message,
+                StackTrace = ex.StackTrace
+            });
+        }
+
+        Console.ReadLine();
+    }
+}
+
+// Класс для хранения информации об ошибке
+public class ErrorLog
+{
+    public DateTime Time { get; set; }
+    public string Message { get; set; }
+    public string StackTrace { get; set; }
+}
